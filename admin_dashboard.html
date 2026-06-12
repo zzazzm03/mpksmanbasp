@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — MPK SMAN 1 Bangil</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Tahoma',sans-serif;background:#F9F5F0;color:#1a1a1a;}
+
+  /* LOGIN */
+  #login-screen{
+    min-height:100vh;display:flex;align-items:center;justify-content:center;
+    background:#6B0F1A;
+  }
+  .login-box{
+    background:#fff;border-radius:12px;padding:40px 36px;width:360px;
+    box-shadow:0 8px 32px rgba(0,0,0,0.2);text-align:center;
+  }
+  .login-box h1{font-size:18px;color:#6B0F1A;margin-bottom:4px;}
+  .login-box p{font-size:12px;color:#888;margin-bottom:28px;}
+  .login-box input{
+    width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:6px;
+    font-family:Tahoma,sans-serif;font-size:13px;margin-bottom:12px;outline:none;
+    transition:border-color .18s;
+  }
+  .login-box input:focus{border-color:#6B0F1A;}
+  .btn-login{
+    width:100%;padding:12px;background:#6B0F1A;color:#fff;border:none;
+    border-radius:6px;font-family:Tahoma,sans-serif;font-size:14px;
+    font-weight:700;cursor:pointer;transition:background .18s;
+  }
+  .btn-login:hover{background:#8B1A1A;}
+  .login-err{color:#c00;font-size:12px;margin-top:8px;display:none;}
+
+  /* DASHBOARD */
+  #dashboard{display:none;}
+  header{
+    background:#6B0F1A;color:#fff;padding:14px 28px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  header h1{font-size:16px;font-weight:700;letter-spacing:.3px;}
+  header span{font-size:12px;opacity:.75;}
+  .btn-logout{
+    background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);
+    padding:6px 16px;border-radius:4px;font-family:Tahoma,sans-serif;
+    font-size:12px;cursor:pointer;transition:background .18s;
+  }
+  .btn-logout:hover{background:rgba(255,255,255,.25);}
+
+  /* STATS */
+  .stats-row{
+    display:flex;gap:16px;padding:20px 28px 0;
+  }
+  .stat-card{
+    flex:1;background:#fff;border-radius:8px;padding:16px 20px;
+    border-left:4px solid #6B0F1A;
+  }
+  .stat-card .num{font-size:28px;font-weight:700;color:#6B0F1A;}
+  .stat-card .lbl{font-size:11px;color:#888;margin-top:2px;letter-spacing:.4px;text-transform:uppercase;}
+
+  /* FILTERS */
+  .toolbar{
+    display:flex;gap:10px;align-items:center;padding:16px 28px 0;flex-wrap:wrap;
+  }
+  .toolbar select,.toolbar input{
+    padding:8px 12px;border:1.5px solid #ddd;border-radius:6px;
+    font-family:Tahoma,sans-serif;font-size:12px;outline:none;
+    transition:border-color .18s;
+  }
+  .toolbar select:focus,.toolbar input:focus{border-color:#6B0F1A;}
+  .toolbar input{flex:1;min-width:180px;}
+  .btn-export{
+    background:#C9A84C;color:#fff;border:none;padding:8px 16px;
+    border-radius:6px;font-family:Tahoma,sans-serif;font-size:12px;
+    font-weight:700;cursor:pointer;transition:background .18s;
+  }
+  .btn-export:hover{background:#a88a3a;}
+
+  /* TABLE */
+  .table-wrap{padding:16px 28px 32px;overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;}
+  thead{background:#6B0F1A;color:#fff;}
+  thead th{
+    padding:11px 14px;text-align:left;font-size:12px;
+    font-weight:700;letter-spacing:.3px;white-space:nowrap;
+  }
+  tbody tr{border-bottom:1px solid #f0eae4;transition:background .12s;}
+  tbody tr:hover{background:#fdf8f5;}
+  tbody td{padding:10px 14px;font-size:12px;color:#333;vertical-align:top;}
+  .td-isi{max-width:320px;line-height:1.5;}
+  .td-ticket{font-family:monospace;font-size:11px;color:#6B0F1A;letter-spacing:1px;}
+
+  /* STATUS BADGE */
+  .badge{
+    display:inline-block;padding:3px 10px;border-radius:20px;
+    font-size:10px;font-weight:700;white-space:nowrap;
+  }
+  .badge-diterima{background:#fff3cd;color:#856404;}
+  .badge-diproses{background:#cfe2ff;color:#084298;}
+  .badge-selesai{background:#d1e7dd;color:#0a3622;}
+
+  /* STATUS SELECT */
+  .sel-status{
+    padding:4px 8px;border:1px solid #ddd;border-radius:4px;
+    font-family:Tahoma,sans-serif;font-size:11px;cursor:pointer;
+  }
+
+  .empty-row td{text-align:center;color:#aaa;padding:32px;font-size:13px;}
+  .loading-row td{text-align:center;color:#888;padding:24px;font-size:13px;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <h1>🔒 Admin MPK</h1>
+    <p>SMA Negeri 1 Bangil — Dashboard Aspirasi</p>
+    <input type="email" id="adm-email" placeholder="Email admin">
+    <input type="password" id="adm-pass" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn-login" onclick="doLogin()">Masuk</button>
+    <div class="login-err" id="login-err">Email atau password salah.</div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <header>
+    <div>
+      <h1>Dashboard Aspirasi — MPK SMAN 1 Bangil</h1>
+      <span id="admin-email-label"></span>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">Keluar</button>
+  </header>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="num" id="d-total">—</div>
+      <div class="lbl">Total Aspirasi</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" id="d-today">—</div>
+      <div class="lbl">Masuk Hari Ini</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" id="d-proses">—</div>
+      <div class="lbl">Sedang Diproses</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" id="d-selesai">—</div>
+      <div class="lbl">Selesai</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <select id="filter-status" onchange="filterTable()">
+      <option value="">Semua Status</option>
+      <option value="Diterima">Diterima</option>
+      <option value="Diproses">Diproses</option>
+      <option value="Selesai">Selesai</option>
+    </select>
+    <select id="filter-kat" onchange="filterTable()">
+      <option value="">Semua Kategori</option>
+      <option>Akademik &amp; Kurikulum</option>
+      <option>Fasilitas Sekolah</option>
+      <option>Kegiatan Ekskul</option>
+      <option>Kebijakan Sekolah</option>
+      <option>Lingkungan &amp; Kebersihan</option>
+      <option>Lainnya</option>
+    </select>
+    <input type="text" id="filter-search" placeholder="Cari isi aspirasi..." oninput="filterTable()">
+    <button class="btn-export" onclick="exportCSV()">⬇ Export CSV</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Kode Tiket</th>
+          <th>Tanggal</th>
+          <th>Kategori</th>
+          <th>Isi Aspirasi</th>
+          <th>Harapan</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="tbl-body">
+        <tr class="loading-row"><td colspan="7">Memuat data...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Supabase JS via CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+// =============================================
+// KONFIGURASI — ganti dengan nilai dari Supabase
+// =============================================
+var SUPABASE_URL = 'https://nkcpyhijkkrmiygspgyv.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rY3B5aGlqa2tybWl5Z3NwZ3l2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExOTYxMjMsImV4cCI6MjA5Njc3MjEyM30.tpPMwp6Wud1qq18GaeCpr7_FyVHDnRK5pnIoIIw1iio';
+// =============================================
+
+var _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+var allData = [];
+
+async function doLogin() {
+  var email = document.getElementById('adm-email').value.trim();
+  var pass  = document.getElementById('adm-pass').value;
+  var err   = document.getElementById('login-err');
+  err.style.display = 'none';
+
+  var { data, error } = await _supabase.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    err.style.display = 'block';
+    return;
+  }
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('admin-email-label').textContent = email;
+  loadDashboard();
+}
+
+async function doLogout() {
+  await _supabase.auth.signOut();
+  location.reload();
+}
+
+async function loadDashboard() {
+  var { data, error } = await _supabase
+    .from('aspirasi')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) { alert('Gagal memuat data: ' + error.message); return; }
+  allData = data || [];
+  renderStats();
+  renderTable(allData);
+}
+
+function renderStats() {
+  var today = new Date().toISOString().slice(0,10);
+  document.getElementById('d-total').textContent   = allData.length;
+  document.getElementById('d-today').textContent   = allData.filter(r => r.created_at.slice(0,10) === today).length;
+  document.getElementById('d-proses').textContent  = allData.filter(r => r.status === 'Diproses').length;
+  document.getElementById('d-selesai').textContent = allData.filter(r => r.status === 'Selesai').length;
+}
+
+function renderTable(rows) {
+  var tbody = document.getElementById('tbl-body');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="7">Belum ada aspirasi masuk.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map((r, i) => `
+    <tr>
+      <td style="color:#aaa;font-size:11px;">${i+1}</td>
+      <td class="td-ticket">${r.ticket_code}</td>
+      <td style="white-space:nowrap;">${r.created_at.slice(0,10)}</td>
+      <td><span style="background:#f0eae4;padding:2px 8px;border-radius:12px;font-size:11px;">${r.kategori}</span></td>
+      <td class="td-isi">${escHtml(r.isi)}</td>
+      <td style="color:#666;">${escHtml(r.harapan || '—')}</td>
+      <td>
+        <select class="sel-status" onchange="updateStatus('${r.id}', this.value)">
+          <option ${r.status==='Diterima' ?'selected':''}>Diterima</option>
+          <option ${r.status==='Diproses' ?'selected':''}>Diproses</option>
+          <option ${r.status==='Selesai'  ?'selected':''}>Selesai</option>
+        </select>
+      </td>
+    </tr>`).join('');
+}
+
+function filterTable() {
+  var st  = document.getElementById('filter-status').value;
+  var kt  = document.getElementById('filter-kat').value;
+  var srch= document.getElementById('filter-search').value.toLowerCase();
+  var filtered = allData.filter(r =>
+    (!st   || r.status   === st) &&
+    (!kt   || r.kategori === kt) &&
+    (!srch || r.isi.toLowerCase().includes(srch) || r.harapan?.toLowerCase().includes(srch))
+  );
+  renderTable(filtered);
+}
+
+async function updateStatus(id, newStatus) {
+  var { error } = await _supabase
+    .from('aspirasi')
+    .update({ status: newStatus })
+    .eq('id', id);
+  if (error) { alert('Gagal update: ' + error.message); return; }
+  var rec = allData.find(r => r.id === id);
+  if (rec) rec.status = newStatus;
+  renderStats();
+}
+
+function exportCSV() {
+  var rows = [['Kode Tiket','Tanggal','Kategori','Isi Aspirasi','Harapan','Status']];
+  allData.forEach(r => rows.push([
+    r.ticket_code, r.created_at.slice(0,10),
+    r.kategori, '"'+r.isi.replace(/"/g,'""')+'"',
+    '"'+(r.harapan||'').replace(/"/g,'""')+'"', r.status
+  ]));
+  var csv = rows.map(r => r.join(',')).join('\n');
+  var a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'aspirasi_mpk_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
